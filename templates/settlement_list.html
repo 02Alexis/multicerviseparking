@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %} {{ title }} {% endblock %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<style>
+  .text-success { color: #28a745; }
+  .text-warning { color: #ffc107; }
+  .text-danger { color: #dc3545; }
+  .text-orange { color: #fd7e14; }
+</style>
+<link href="{% static 'lightbox/css/lightbox.css' %}" rel="stylesheet">
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mt-2">
+        <h1>{{ label }}</h1>
+        <button type="button" title="Agregar Liquidacion" class="btn btn-outline-primary btn-sm btn-block btn-transition" onclick="window.location.href='{% url 'add_parking' %}'">
+          <i class="bi bi-plus-square"></i>
+        </button>
+    </div>
+    {% if user.is_superuser or user.is_staff %}
+    <form method="get" class="mb-3">
+      <label for="parking_id">Filtrar por Parqueadero:</label>
+      <select name="parking_id" id="parking_id" class="form-select" onchange="this.form.submit()">
+        <option value="">-- Todos --</option>
+        {% for parking in parkings %}
+          <option value="{{ parking.id }}" {% if selected_parking_id == parking.id %}selected{% endif %}>
+            {{ parking.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </form>
+    {% else %}
+    <p><strong>Parqueadero asignado:</strong> {{ assigned_parking.name }}</p>
+    {% endif %}
+    
+    
+    <div class="card card-body border-primary animated mb-3" style="box-shadow: 0px 3px 8px rgba(0, 123, 255, 0.5)">
+      <table id="example" class="table table-hover" style="width:100%">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Lavados</th>
+            {% comment %} <th>Monto Total</th> {% endcomment %}
+            <th>% Descuento</th>
+            <th>Monto Final</th>
+            <th>Parqueo</th>
+            <th>Total General</th>
+            <th>Img</th>
+            <th>Edit</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for settlement in settlements %}
+            <tr style="cursor: pointer;">
+              <td class="danger" data-order="{{ settlement.date|date:'Y-m-d' }}">{{ settlement.date|date:'d/m/Y' }}</td>
+              <td>
+                {% for washing in settlement.washing.all %}
+                  <span
+                    class="
+                      {% if washing.status == 'pagado' %}text-success
+                      {% elif washing.status == 'arm' %}text-warning
+                      {% elif washing.status == 'no_pagado' %}text-danger
+                      {% elif washing.status == 'cancelado' %}text-orange
+                      {% endif %}
+                    "
+                  >
+                    {{ washing.status|title }} - {{ washing.vehicle_plate }} - ${{ washing.washing_price|floatformat:0|intcomma }}
+                  </span><br>
+                {% endfor %}
+              </td>
+              {% comment %} <td {% if settlement.total_amount < 0 %}style="color: #dc3545;"{% elif settlement.total_amount > 0 %}style="color: #FFC107;"{% endif %}>${{ settlement.total_amount|floatformat:0|intcomma }}</td> {% endcomment %}
+              <td>
+                {{ settlement.calculated_percentage|floatformat:0|intcomma }}
+                <div class="worker-payment">
+                  {% for worker, amount in settlement.payments_per_worker.items %}
+                    {{ worker.code }}: ${{ amount|floatformat:0|intcomma }}<br>
+                  {% endfor %}
+                </div>
+              </td>
+              <td {% if settlement.final_amount < 0 %}style="color: #dc3545;"{% elif settlement.final_amount > 0 %}style="color: #FFC107;"{% endif %}>${{ settlement.final_amount|floatformat:0|intcomma }}</td>
+              <td {% if settlement.parking_revenue < 0 %}style="color: #dc3545;"{% elif settlement.parking_revenue > 0 %}style="color: #FFC107;"{% endif %}>${{ settlement.parking_revenue|floatformat:0|intcomma }}</td>
+              <td {% if settlement.total_with_parking < 0 %}style="color: #dc3545;"{% elif settlement.total_with_parking > 0 %}style="color: #FFC107;"{% endif %}>${{ settlement.total_with_parking|floatformat:0|intcomma }}</td>
+              <td>
+                {% if settlement.image %}
+                  <a href="{{ settlement.image.url }}" data-lightbox="settlement-gallery" title="Imagen de liquidación">
+                    <img src="{{ settlement.image.url }}" height="100" alt="Imagen de liquidación" />
+                  </a>
+                {% else %}
+                  <img src="{% static 'images/placeholder.png' %}" height="100" alt="Imagen no disponible" />
+                {% endif %}
+              </td>
+              <td>
+                <a href="{% url 'update_parking' settlement.id %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil-square"></i></a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+</div>
+<script src="{% static 'lightbox/js/lightbox.js' %}"></script>
+<script src="{% static 'js/index.js' %}"></script>
+<script>
+  lightbox.option({
+    'resizeDuration': 200,
+    'wrapAround': true,
+    'fadeDuration': 300,
+    'imageFadeDuration': 300
+  })
+</script>
+{% endblock %}

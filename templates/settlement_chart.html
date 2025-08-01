@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container">
+    <h1>Ingresos por Parqueadero</h1>
+    
+    <form method="get" id="filterForm">
+        <label class="form-label" for="parkingSelect">Parqueadero:</label>
+        <select class="form-select" name="parking_id" id="parkingSelect" onchange="document.getElementById('filterForm').submit()">
+          <option value="">Todos</option>
+          {% for parking in parkings %}
+            <option value="{{ parking.id }}" {% if parking.id == selected_parking_id %}selected{% endif %}>{{ parking.name }}</option>
+          {% endfor %}
+        </select>
+      
+        <label class="form-label" for="yearSelect">Año:</label>
+        <select class="form-select" name="year" id="yearSelect" onchange="document.getElementById('filterForm').submit()">
+          {% for y in years %}
+            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+        
+        <label class="form-label" for="monthSelect">Mes:</label>
+        <select class="form-select" name="month" id="monthSelect" onchange="document.getElementById('filterForm').submit()">
+          {% for m in months %}
+            <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m }}</option>
+          {% endfor %}
+        </select>
+    </form>      
+    
+    <canvas id="incomeChart" width="600" height="400"></canvas>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('incomeChart').getContext('2d');
+  const chart = new Chart(ctx, {
+    type: 'bar',  // Puedes cambiar a 'line', 'pie', etc.
+    data: {
+      labels: {{ data.labels|safe }},
+      datasets: [{
+        label: 'Ingresos Totales',
+        data: {{ data.totals|safe }},
+        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+
+{% endblock %}

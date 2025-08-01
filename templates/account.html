@@ -1,0 +1,85 @@
+{% extends 'base.html' %} {% block content %}
+<style>
+  .dashboard {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    background: linear-gradient(
+      180deg,
+      #fffefa 0%,
+      #ffe031 0%,
+      #fffefa 0.01%,
+      #fcfcfc 100%
+    );
+  }
+  .dashboard__name {
+    margin-top: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #414141;
+  }
+
+  .dashboard__logout {
+    transition: 0.5s;
+    border-radius: 10px;
+    width: 100%;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background: #f2f2f2;
+  }
+  .dashboard__logout button {
+    transition: 0.5s;
+    color: #414141;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    line-height: 16px;
+    text-align: start;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .dashboard__admin {
+    transition: 0.5s;
+    border-radius: 10px;
+    width: 100%;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background: #f2f2f2;
+  }
+  .dashboard__admin button {
+    transition: 0.5s;
+    color: #414141;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    line-height: 16px;
+    text-align: start;
+    cursor: pointer;
+    width: 100%;
+  }
+</style>
+
+<div class="dashboard">
+  <h2 class="dashboard__name">
+    <i class="bi bi-person-fill"></i> <span>{{ user.username }}</span>
+  </h2>
+  
+  <div class="dashboard__admin {% if not user.is_superuser %}d-none{% endif %}" onclick="window.location.href='{% url 'admin:index' %}'" role="button" tabindex="0">
+    <button>
+      Administración de Django
+    </button>
+  </div>
+  <div class="dashboard__logout" onclick="window.location.href='{% url 'logout' %}'" role="button" tabindex="0">
+    <button>
+      Cierre de sesión
+    </button>
+  </div>
+</div>
+{% endblock %}

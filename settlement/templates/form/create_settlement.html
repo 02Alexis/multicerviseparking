@@ -1,0 +1,120 @@
+{% extends 'base.html' %} 
+{% block title %} {{ title }} {% endblock %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+  <form
+      action="{% url 'add_parking' %}"
+      enctype="multipart/form-data"
+      method="post"
+      class="mt-2"
+    >
+      <div class="card border-primary" style="box-shadow: 0px 3px 8px rgba(0, 123, 255, 0.5);">
+        <div class="card-header border-primary d-flex justify-content-between align-items-center mt-2">
+          <h4 class="card-title">{{ title }}</h4>
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#addWashingModal"
+          >
+            + Agregar Lavado
+          </button>
+        </div>
+        
+        <div class="card-body mb-2">
+            {% csrf_token %} {% if form.errors %}
+            <div class="alert alert-danger">
+              <ul>
+                {% for field in form %} {% for error in field.errors %}
+                <li>{{ field.label }}: {{ error }}</li>
+                {% endfor %} {% endfor %} {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %} {{ form.as_p }}
+          </div>      
+        </div>
+        <div class="mt-2 d-flex justify-content-between">
+          <button onclick="window.location.href='{% url 'parking' %}'" class="btn btn-outline-danger mb-2" type="button">Cancelar</button>
+          <button class="btn btn-outline-primary mb-2" type="submit">{{ label }}</button>
+        </div>
+      </div>
+  </form>
+</div>
+
+<!-- Modal para crear Lavado -->
+<div
+  class="modal fade"
+  id="addWashingModal"
+  tabindex="-1"
+  aria-labelledby="addWashingModalLabel"
+  aria-hidden="true"
+  >
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form
+        id="addWashingForm"
+        method="post"
+        action="{% url 'create_washing_ajax' %}"
+      >
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="addWashingModalLabel">Agregar Lavado</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Cerrar"
+          ></button>
+        </div>
+        <div class="modal-body">{{ washing_form.as_p }}</div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-outline-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %} 
+
+{% block extrajs %}
+<script>
+  $(document).on("submit", "#addWashingForm", function (e) {
+    e.preventDefault();
+    var $form = $(this);
+    $.ajax({
+      url: $form.attr("action"),
+      type: "POST",
+      data: $form.serialize(),
+      success: function (data) {
+        var $washingSelect = $("#id_washing");
+        var newOption = new Option(data.text, data.id, true, true);
+        $washingSelect.append(newOption).trigger("change");
+
+        // Cierra el modal
+        var washingModalEl = document.getElementById("addWashingModal");
+        var washingModal = bootstrap.Modal.getInstance(washingModalEl);
+        if (washingModal) {
+          washingModal.hide();
+        }
+
+        // Espera a que el modal se cierre y luego limpia el foco
+        setTimeout(function () {
+          if (document.activeElement) {
+            document.activeElement.blur();
+          }
+          // Si el backdrop sigue, elimínalo
+          $(".modal-backdrop").remove();
+          $("body").removeClass("modal-open");
+          $("body").css("overflow", "");
+        }, 500);
+
+        $form[0].reset();
+      },
+    });
+  });
+</script>
+{% endblock extrajs %}

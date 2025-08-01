@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block title %} {{ title }} {% endblock %}
+{% load static %}
+{% load humanize %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mt-2">
+      <h1>{{ title }}</h1>
+      <button title="Nuevo Cliente" class="btn btn-outline-primary" onclick="open_modal_create('{% url 'create_customer' %}')">
+        <i class="bi bi-plus-square"></i>
+      </button>
+      <button class="btn btn-outline-warning" id="btnOpenResetModal" title="Reiniciar estados" {% if not can_reset %}disabled{% endif %}>
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
+        
+        <!-- Modal Confirmación Reiniciar Estados -->
+      <div class="modal fade" id="confirmResetModal" tabindex="-1" aria-labelledby="confirmResetLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="confirmResetLabel">Confirmar acción</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+              ¿Seguro que quieres reiniciar el estado de todos los clientes a <strong>No Pagado</strong>?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" id="btnConfirmReset" class="btn btn-outline-primary">Confirmar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contenedor del modal -->
+      <div class="modal fade" id="crear" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"></div>
+    </div>
+
+    {% if user.is_superuser or user.is_staff %}
+    <form method="get" class="mb-3">
+      <label for="parking_id">Filtrar por Parqueadero:</label>
+      <select name="parking_id" id="parking_id" class="form-select" onchange="this.form.submit()">
+        <option value="">-- Todos --</option>
+        {% for parking in parkings %}
+          <option value="{{ parking.id }}" {% if selected_parking_id == parking.id %}selected{% endif %}>
+            {{ parking.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </form>
+    {% else %}
+    <p><strong>Parqueadero asignado:</strong> {{ assigned_parking.name }}</p>
+    {% endif %}
+    
+    {% include 'index/paid_nav.html' %}
+
+    <div class="card card-body border-primary animated mb-3" style="box-shadow: 0px 3px 8px rgba(0, 123, 255, 0.5)">
+        <table id="customer_hoyo" class="table table-hover" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Telefono</th>
+                    <th>Tipo de Vehiculo</th>
+                    <th>Placa</th>
+                    <th>Precio</th>
+                    <th>Día de pago</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr 
+                  style="cursor: pointer;"
+                  class="{{ customer.get_status_class }}"
+                  >
+                    <td>{{ customer.id }}</td>
+                    <td>{{ customer.name }}</td>
+                    <td>{{ customer.phone }}</td>
+                    <td>{{ customer.vehicle_type }}</td>
+                    <td>{{ customer.formatted_license_plate }}</td>
+                    <td>${{ customer.price|floatformat:0|intcomma }}</td>
+                    <td>{{ customer.payment_day }}</td>
+                    <td>
+                      {% if customer.status != 'pagado' %}
+                      <button class="btn btn-sm btn-outline-success btn-mark-paid" data-id="{{ customer.id }}" title="Marcar como Pagado">
+                        <i class="bi bi-check-circle"></i>
+                      </button>
+                      {% else %}
+                      <span class="badge bg-outline-success"><i class="bi bi-check-square"></i></span>
+                      {% endif %}
+
+                      <a href="{% url 'create_invoice_from_customer' customer.id %}" class="btn btn-sm btn-outline-danger" title="Crear factura para {{ customer.name }}">
+                        <i class="bi bi-file-diff"></i>
+                      </a>
+                      <button title="Editar {{ customer.name }}" class="btn btn-outline-primary btn-sm btn-block btn-transition" onclick="open_modal_update('{% url 'update_customer' customer.id %}')">
+                        <i class="bi bi-pencil-square"></i>
+                      </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="{% static 'js/datatable/customer/customer_hoyo.js' %}"></script>
+{% endblock %}
+
+{% block extrajs %}
+<script type="text/javascript">
+function open_modal_create(url) {
+  $("#crear").load(url, function () {
+    // Forzar la inicialización manual del modal
+    const modal = new bootstrap.Modal(document.getElementById('crear'));
+    modal.show();
+  });
+}
+
+function open_modal_update(url) {
+  $("#crear").load(url, function () {
+    const modal = new bootstrap.Modal(document.getElementById('crear'));
+    modal.show();
+  });
+}
+
+  // Nuevo código para modal de confirmación
+  document.addEventListener('DOMContentLoaded', function() {
+    const btnOpenResetModal = document.getElementById('btnOpenResetModal');
+    const btnConfirmReset = document.getElementById('btnConfirmReset');
+    const confirmResetModal = new bootstrap.Modal(document.getElementById('confirmResetModal'));
+  
+    btnOpenResetModal.addEventListener('click', function() {
+      if ({{ can_reset|yesno:"true,false" }}) {
+        confirmResetModal.show();
+      }
+    });
+  
+    btnConfirmReset.addEventListener('click', function() {
+      window.location.href = "{% url 'reset_customers_status' %}";
+    });
+
+    const buttons = document.querySelectorAll('.btn-mark-paid');
+    buttons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.stopPropagation(); // Para evitar que dispare el onclick del <tr>
+        const customerId = this.getAttribute('data-id');
+        fetch("{% url 'mark_customer_paid' %}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: new URLSearchParams({customer_id: customerId})
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const td = this.closest('td');
+            if (td) {
+              td.innerHTML = `
+                <span class="badge bg-success" title="Cliente pagado">
+                  <i class="bi bi-check-square"></i>
+                </span>
+                <a href="{% url 'create_invoice_from_customer' 0 %}".replace('0', ${customerId}) class="btn btn-sm btn-outline-danger" title="Crear factura para cliente">
+                  <i class="bi bi-file-diff"></i>
+                </a>
+              `;
+            }
+            const row = this.closest('tr');
+            if(row) {
+              row.classList.remove('table-danger', 'table-warning');
+              row.classList.add('table-success');
+            }
+            location.reload();
+          } else {
+            alert(data.error || 'Error al actualizar el estado.');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error en la comunicación con el servidor.');
+        });
+      });
+    });
+
+  });
+
+
+</script>
+{% endblock extrajs %}

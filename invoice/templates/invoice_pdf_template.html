@@ -1,0 +1,128 @@
+{% load static %}
+{% load humanize %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Factura 00{{ invoice.id }}</title>
+
+    <style>
+        body {
+            font-family: "Helvetica", sans-serif;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .table-value th, .table-value td {
+            background-color: none;
+            border: none;
+            margin: 0%;
+        }
+        span {
+            color: red;
+        }
+        .company-info {
+            font-size: 12pt;
+            text-align: left;
+            padding-left: 20pt;
+        }
+        .company-info p {
+            margin: 0;
+        }
+        .customer-info {
+            font-size: 10pt;
+            margin-top: 10px;
+            border-collapse: collapse;
+            margin-bottom: 20pt;
+            text-align: center; /* Centrando el contenido */
+            vertical-align: middle;
+            border-spacing: 10pt; /* Espaciado entre celdas */
+        }
+        
+        .customer-info th, .customer-info td {
+            background-color: none;
+            width: 100%;
+            padding: 3pt;
+            border: 1pt solid black;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <table class="table-value">
+        <th style="text-align: left; font-weight: bold; font-size: 16px;">MULTISERVICIOS BERRÍO LOS COCHES</th>
+        <td style="text-align: right; font-weight: bold; font-size: 16px;">Factura de Venta No. <span>00{{ invoice.id }}</span></td>
+    </table>
+
+    <div class="company-info">
+        <p><strong>Juan Carlos Usuga Jimenez - Nit: 71.193.429 - 1</strong></p>
+        <p><strong>Carrera 4 Calle 47 Esquina - Tel: 318 8524767 - Puerto Berrio, Ant.</strong></p>
+        <p><strong>RÉGIMEN SIMPLIFICADO</strong></p>
+    </div>
+
+    <table class="customer-info">
+        <tr>
+            <th>Cliente</th>
+            <td>{{ invoice.customer_name }}</td>
+            <th>Fecha</th>
+            <td>{{ invoice.date }}</td>
+        </tr>
+        <tr>
+            <th>NIT/CC</th>
+            <td>{{ invoice.number }}</td>
+            <th>Teléfono</th>
+            <td>{{ invoice.phone }}</td>
+        </tr>
+        <tr>
+            <th>Vehículo</th>
+            <td>{{ invoice.vehicle_type }}</td>
+            <th>Placa</th>
+            <td>{{ invoice.license_plate }}</td>
+        </tr>
+        <tr>
+            <th>Dirección</th>
+            <td colspan="3">{{ invoice.address }}</td>
+        </tr>
+    </table>
+    
+    <h2>Productos</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detail in invoice.moreinfo_set.all %}
+            <tr>
+                <td>{{ detail.get_product_display }}</td>
+                <td>{{ detail.quantity }}</td>
+                <td style="text-align: right;">$ {{ detail.price|floatformat:0|intcomma }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="table-value" style="margin-top: 6px;">
+        <th style="width: 100px;">Observaciones:</th>
+        <td style="width: 300px;"></td>
+        <th style="width: 120px;">Valor Total: </th>
+        <td style="text-align: right;">$ {{ total_amount|floatformat:0|intcomma }}</td>
+    </table>
+    
+    
+</body>
+</html>

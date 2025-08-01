@@ -1,0 +1,22 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h1 class="modal-title fs-5" id="exampleModalLabel">{{ title }}</h1>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+      <p>Creado por: {{ customer.created_by }}</p>
+      <p>Fecha de creación: {{ customer.created_at }}</p>
+      <p>Última modificación por: {{ customer.modified_by_name }}</p>
+      <p>Fecha de última modificación: {{ customer.modified_at }}</p>
+      <form action="{% url 'update_customer' pk=object.pk %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="modal-footer">
+            <button class="btn btn-outline-primary" type="submit">{{ label }}</button>
+            <button class="btn btn-outline-danger" data-bs-dismiss="modal" type="button">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

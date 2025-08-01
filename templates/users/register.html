@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="{% static "images/favicon.ico" %}" />  
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+</head>
+<body>
+    <style>
+        .divider:after,
+        .divider:before {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #eee;
+        }
+        .h-custom {
+        height: calc(100% - 73px);
+        }
+        @media (max-width: 450px) {
+        .h-custom {
+        height: 100%;
+        }
+        }
+    </style>
+
+    {% if messages %}
+    <div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+      {% for message in messages %}
+        {% if message.tags == 'error' %}
+          {% with 'danger' as toast_class %}
+            <div class="toast align-items-center text-bg-{{ toast_class }} border-0 mb-2 fade show" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="d-flex">
+                <div class="toast-body">
+                  <i class="bi bi-exclamation-triangle"></i> {{ message }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+            </div>
+          {% endwith %}
+        {% else %}
+          {% with message.tags as toast_class %}
+            <div class="toast align-items-center text-bg-{{ toast_class }} border-0 mb-2 fade show" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="d-flex">
+                <div class="toast-body">
+                  <i class="bi bi-check-circle-fill"></i> {{ message }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+            </div>
+          {% endwith %}
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+    <section class="vh-100">
+        <div class="container-fluid h-custom">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col-md-9 col-lg-6 col-xl-5">
+                    <img src="https://res.cloudinary.com/drrpq9vlk/image/upload/fl_preserve_transparency/v1749426832/Parking-bro_kv5siw.jpg" class="img-fluid" alt="Sample image">
+                </div>
+                <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="input-group mt-4">
+                            {{ form.as_p }}
+                        </div>
+                        <div class="w-100 mt-4 fw-semibold shadow-sm">
+                            <button type="submit" class="btn btn-outline-success btn-sm btn-block" style="padding-left: 2.5rem; padding-right: 2.5rem;">Registrarse</button>
+                        </div>
+                    </form>
+                
+                    <p class="small fw-bold mt-2 pt-1 mb-0">
+                        ¿Ya tienes una cuenta? 
+                        <a href="{% url 'login' %}" class="link-danger">Inicia sesión aquí</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div
+        class="d-flex flex-column flex-md-row text-center text-md-start justify-content-between py-4 px-4 px-xl-5 bg-success">
+        <!-- Copyright -->
+        <div class="text-white mb-3 mb-md-0">
+          Copyright © 2025. All rights reserved.
+        </div>
+        <!-- Copyright -->
+      </div>
+    </section>
+</body>
+</html>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var toastElements = document.querySelectorAll('.toast');
+    toastElements.forEach(function (toastEl) {
+      var toast = new bootstrap.Toast(toastEl, { delay: 4000 }); // 4 segundos
+      toast.show();
+    });
+  });
+</script>
