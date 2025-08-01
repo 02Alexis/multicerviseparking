@@ -2,14 +2,22 @@
     "version": 2,
     "builds": [
       {
-        "src": "manage.py",
+        "src": "multi_service_parking/wsgi.py",
+        "use": "@vercel/python"
+      },
+      {
+        "src": "build.sh",
         "use": "@vercel/python"
       }
     ],
     "routes": [
+        {
+            "src": "/static/(.*)",
+            "dest": "/static/$1"
+        },
       {
         "src": "/(.*)",
-        "dest": "manage.py"
+        "dest": "multi_service_parking/wsgi.py"
       }
     ]
   }
