@@ -134,17 +134,13 @@ TEMPUS_DOMINUS_LOCALIZE = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+# Configuración para producción (DEBUG=False)
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Ruta donde se recolectan los estáticos
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # Donde buscan los estáticos
 
-if not DEBUG:
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-else:
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # opcional en dev
-
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]   
+# WhiteNoise configuration
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  
 
 
 MEDIA_URL = "/media/"
