@@ -140,11 +140,11 @@ if not DEBUG:
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 else:
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # opcional para desarrollo
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # opcional en dev
 
-STATICFILES_DIRS = (
+STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
-)   
+]   
 
 
 MEDIA_URL = "/media/"
